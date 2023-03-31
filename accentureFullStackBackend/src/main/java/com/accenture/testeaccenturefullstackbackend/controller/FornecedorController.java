@@ -1,6 +1,8 @@
 package com.accenture.testeaccenturefullstackbackend.controller;
 
+import com.accenture.testeaccenturefullstackbackend.model.Cep;
 import com.accenture.testeaccenturefullstackbackend.model.Fornecedor;
+import com.accenture.testeaccenturefullstackbackend.service.CepService;
 import com.accenture.testeaccenturefullstackbackend.service.FornecedorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,16 +43,28 @@ public class FornecedorController {
     @PutMapping
     public ResponseEntity<Object> putFornecedor(@Valid @RequestBody Fornecedor fornecedor){
         Optional<Fornecedor> optionalFornecedor = this.service.getFornecedor(fornecedor.getCnpjOrCpf());
+
         if(!optionalFornecedor.isPresent()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Fornecedor não encontrada.");
+        }
+
+        Cep cep = CepService.getCepInfo(fornecedor.getCep());
+        if(cep == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cep inválido!");
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(this.service.putOrSaveFornecedor(fornecedor));
     }
 
     @PostMapping
-    public Fornecedor saveFornecedor(@Valid @RequestBody Fornecedor fornecedor){
-        return this.service.putOrSaveFornecedor(fornecedor);
+    public ResponseEntity<Object> saveFornecedor(@Valid @RequestBody Fornecedor fornecedor){
+
+        Cep cep = CepService.getCepInfo(fornecedor.getCep());
+        if(cep == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cep inválido!");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(this.service.putOrSaveFornecedor(fornecedor));
     }
 
     @DeleteMapping("/{cnpjOrCpf}")

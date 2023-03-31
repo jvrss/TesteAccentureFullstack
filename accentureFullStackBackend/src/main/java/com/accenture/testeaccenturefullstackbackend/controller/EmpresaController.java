@@ -1,5 +1,7 @@
 package com.accenture.testeaccenturefullstackbackend.controller;
 
+import com.accenture.testeaccenturefullstackbackend.model.Cep;
+import com.accenture.testeaccenturefullstackbackend.service.CepService;
 import com.accenture.testeaccenturefullstackbackend.service.EmpresaService;
 import com.accenture.testeaccenturefullstackbackend.model.Empresa;
 import jakarta.validation.Valid;
@@ -42,12 +44,23 @@ public class EmpresaController {
         if(!empresaOptional.isPresent()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Empresa não encontrada.");
         }
+
+        Cep cep = CepService.getCepInfo(empresa.getCep());
+        if(cep == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cep inválido!");
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(this.service.putOrSaveEmpresa(empresa));
     }
 
     @PostMapping
-    public Empresa saveEmpresa(@Valid @RequestBody Empresa empresa) {
-        return this.service.putOrSaveEmpresa(empresa);
+    public ResponseEntity<Object> saveEmpresa(@Valid @RequestBody Empresa empresa) {
+        Cep cep = CepService.getCepInfo(empresa.getCep());
+        if(cep == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cep inválido!");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(this.service.putOrSaveEmpresa(empresa));
     }
 
     @DeleteMapping("/{cnpj}")
